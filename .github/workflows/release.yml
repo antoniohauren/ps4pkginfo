@@ -4,6 +4,11 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag to release
+        required: true
 
 permissions:
   contents: write
@@ -13,18 +18,21 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
       - uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
       - name: Install build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y blueprint-compiler libadwaita-1-dev libgtk-4-dev patchelf
+          sudo apt-get install -y blueprint-compiler libadwaita-1-dev libgirepository1.0-dev libgtk-4-dev patchelf
       - name: Build AppImage
         env:
-          VERSION: ${{ github.ref_name }}
+          VERSION: ${{ inputs.tag || github.ref_name }}
         run: ./packaging/build-appimage.sh
       - uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
           files: dist/*.AppImage
+          tag_name: ${{ inputs.tag || github.ref_name }}
