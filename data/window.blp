@@ -4,15 +4,15 @@ translation-domain "ps4pkginfo";
 
 Adw.ApplicationWindow main_window {
   title: _("PS4 Package Viewer");
-  default-width: 860;
+  default-width: 960;
   default-height: 580;
   width-request: 360;
   height-request: 420;
 
   content: Adw.ToastOverlay toast_overlay {
     child: Adw.NavigationSplitView {
-      min-sidebar-width: 260;
-      max-sidebar-width: 340;
+      min-sidebar-width: 340;
+      max-sidebar-width: 440;
 
       sidebar: Adw.NavigationPage {
         title: _("Package");
@@ -38,26 +38,29 @@ Adw.ApplicationWindow main_window {
               margin-start: 18;
               margin-end: 18;
 
-              Gtk.Overlay {
-                height-request: 300;
-                child: Gtk.Picture cover {
-                  visible: false;
-                  content-fit: cover;
-                  can-shrink: true;
-                  styles ["card"]
-                  accessibility {
-                    label: _("Package cover artwork");
+              Gtk.AspectFrame {
+                ratio: 1.0;
+                obey-child: false;
+                child: Gtk.Overlay {
+                  child: Gtk.Picture cover {
+                    visible: false;
+                    content-fit: cover;
+                    can-shrink: true;
+                    styles ["card"]
+                    accessibility {
+                      label: _("Package cover artwork");
+                    }
+                  };
+                  [overlay]
+                  Gtk.Image cover_placeholder {
+                    icon-name: "application-x-addon-symbolic";
+                    pixel-size: 96;
+                    styles ["dim-label"]
+                    accessibility {
+                      label: _("No package cover available");
+                    }
                   }
                 };
-                [overlay]
-                Gtk.Image cover_placeholder {
-                  icon-name: "application-x-addon-symbolic";
-                  pixel-size: 96;
-                  styles ["dim-label"]
-                  accessibility {
-                    label: _("No package cover available");
-                  }
-                }
               }
 
               Gtk.Box {
@@ -65,7 +68,7 @@ Adw.ApplicationWindow main_window {
                 spacing: 4;
 
                 Gtk.Label game_title {
-                  label: _("Open a PS4 package");
+                  label: _("Open or drop a PS4 package");
                   wrap: true;
                   justify: center;
                   styles ["title-2"]
@@ -107,7 +110,7 @@ Adw.ApplicationWindow main_window {
 
               Adw.ActionRow {
                 title: _("No package loaded");
-                subtitle: _("Use the Open button to inspect a .pkg file.");
+                subtitle: _("Use the Open button or drop a .pkg file here.");
               }
             };
           };

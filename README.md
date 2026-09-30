@@ -48,11 +48,17 @@ go build -o ps4pkginfo-gtk ./cmd/ps4pkginfo-gtk
 PS4PKGINFO_DATA_DIR="$PWD" ./ps4pkginfo-gtk
 ```
 
-Build the Flatpak with the GNOME 50 SDK:
+Download the AppImage from a GitHub release, make it executable, and run it:
 
 ```sh
-flatpak-builder --user --install --force-clean build-dir io.github.hauren.PS4PkgInfo.yml
-flatpak run io.github.hauren.PS4PkgInfo
+chmod +x ps4pkginfo-*.AppImage
+./ps4pkginfo-*.AppImage
+```
+
+Build an x86_64 AppImage locally (downloads linuxdeploy and its GTK plugin):
+
+```sh
+./packaging/build-appimage.sh
 ```
 
 ## Check

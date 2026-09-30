@@ -62,6 +62,16 @@ func activate(app *adw.Application) {
 	}
 	w.window.SetApplication(&app.Application)
 	builder.GetObject("open_button").Cast().(*gtk.Button).ConnectClicked(w.open)
+	drop := gtk.NewDropTarget(gio.GTypeFile, gdk.ActionCopy)
+	drop.ConnectDrop(func(value *glib.Value, _, _ float64) bool {
+		file, ok := value.GoValue().(*gio.File)
+		if !ok || file.Path() == "" {
+			return false
+		}
+		w.load(file.Path())
+		return true
+	})
+	w.window.AddController(drop)
 	w.window.Present()
 }
 
@@ -171,7 +181,10 @@ func dataDir() string {
 	if dir := os.Getenv("PS4PKGINFO_DATA_DIR"); dir != "" {
 		return dir
 	}
-	return "/app/share/ps4pkginfo"
+	if appDir := os.Getenv("APPDIR"); appDir != "" {
+		return filepath.Join(appDir, "usr", "share", "ps4pkginfo")
+	}
+	return "/usr/share/ps4pkginfo"
 }
 
 func commandError(err error) string {
