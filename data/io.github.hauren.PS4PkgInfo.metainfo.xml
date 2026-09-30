@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.hauren.PS4PkgInfo</id>
+  <name>PS4 Package Viewer</name>
+  <summary>Inspect PS4 package metadata</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <developer id="io.github.hauren">
+    <name>Hauren</name>
+  </developer>
+  <description>
+    <p>View cover artwork, package header details, and PARAM.SFO metadata from PS4 PKG files.</p>
+  </description>
+  <launchable type="desktop-id">io.github.hauren.PS4PkgInfo.desktop</launchable>
+  <content_rating type="oars-1.1"/>
+  <releases>
+    <release version="1.0.0" date="2026-09-30"/>
+  </releases>
+</component>

@@ -1,3 +1,6 @@
 /ps4pkginfo
 /ps4pkginfo.exe
+/ps4pkginfo-gtk
+/.flatpak-builder/
+/build-dir/
 *.pkg

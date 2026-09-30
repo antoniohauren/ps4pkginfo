@@ -35,19 +35,24 @@ func sampleSFO() []byte {
 
 func samplePKG() []byte {
 	sfo := sampleSFO()
-	b := make([]byte, 0x1020+len(sfo))
+	icon := []byte("test icon")
+	b := make([]byte, 0x1040+len(sfo)+len(icon))
 	copy(b, "\x7fCNT")
 	be := binary.BigEndian
-	be.PutUint32(b[0x10:], 1)
+	be.PutUint32(b[0x10:], 2)
 	be.PutUint32(b[0x18:], 0x1000)
 	copy(b[0x40:], "UP0000-CUSA12345_00-TEST000000000000")
 	be.PutUint32(b[0x70:], 15)
 	be.PutUint32(b[0x74:], 0x1a)
 	be.PutUint64(b[0x430:], uint64(len(b)))
 	be.PutUint32(b[0x1000:], 0x1000)
-	be.PutUint32(b[0x1010:], 0x1020)
+	be.PutUint32(b[0x1010:], 0x1040)
 	be.PutUint32(b[0x1014:], uint32(len(sfo)))
-	copy(b[0x1020:], sfo)
+	be.PutUint32(b[0x1020:], 0x1200)
+	be.PutUint32(b[0x1030:], uint32(0x1040+len(sfo)))
+	be.PutUint32(b[0x1034:], uint32(len(icon)))
+	copy(b[0x1040:], sfo)
+	copy(b[0x1040+len(sfo):], icon)
 	return b
 }
 
@@ -73,6 +78,11 @@ func TestInspectAndCLI(t *testing.T) {
 		t.Fatalf("JSON results: %s, errors: %s, %v", &out, &errs, err)
 	}
 	out.Reset()
+	errs.Reset()
+	if status := run([]string{"-icon", path}, &out, &errs); status != 0 || out.String() != "test icon" {
+		t.Fatalf("icon output: %q, errors: %s, status: %d", &out, &errs, status)
+	}
+	out.Reset()
 	if err := printInfo(&out, p, true); err != nil || !strings.Contains(out.String(), "Test Game") {
 		t.Fatalf("text output: %s, %v", &out, err)
 	}
@@ -85,7 +95,7 @@ func TestInspectAndCLI(t *testing.T) {
 		{"bad magic", func(b []byte) []byte { b[0] = 0; return b }, true},
 		{"table overflow", func(b []byte) []byte { binary.BigEndian.PutUint32(b[0x10:], 0xffffffff); return b }, true},
 		{"SFO bounds", func(b []byte) []byte { binary.BigEndian.PutUint32(b[0x1014:], 0xffffffff); return b }, true},
-		{"bad SFO", func(b []byte) []byte { b[0x1020] = 1; return b }, true},
+		{"bad SFO", func(b []byte) []byte { b[0x1040] = 1; return b }, true},
 		{"missing SFO", func(b []byte) []byte { b[0x1002] = 0; return b }, false},
 		{"encrypted SFO", func(b []byte) []byte { b[0x1008] = 0x80; return b }, false},
 		{"size mismatch", func(b []byte) []byte { b[0x430] = 1; return b }, false},

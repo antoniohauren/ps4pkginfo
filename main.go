@@ -35,6 +35,7 @@ func run(args []string, out, errOut io.Writer) int {
 	flags.SetOutput(errOut)
 	asJSON := flags.Bool("json", false, "output a JSON array (all SFO fields included)")
 	all := flags.Bool("all", false, "show all PARAM.SFO fields")
+	icon := flags.Bool("icon", false, "write ICON0.PNG from one package to stdout")
 	flags.Usage = func() {
 		fmt.Fprintln(errOut, "Usage: ps4pkginfo [-json] [-all] file.pkg [file.pkg ...]")
 		flags.PrintDefaults()
@@ -48,6 +49,22 @@ func run(args []string, out, errOut io.Writer) int {
 	if flags.NArg() == 0 {
 		flags.Usage()
 		return 2
+	}
+	if *icon {
+		if flags.NArg() != 1 || *asJSON || *all {
+			fmt.Fprintln(errOut, "-icon requires exactly one file and cannot be combined with -json or -all")
+			return 2
+		}
+		data, err := readEntry(flags.Arg(0), 0x1200)
+		if err != nil {
+			fmt.Fprintln(errOut, err)
+			return 1
+		}
+		if _, err := out.Write(data); err != nil {
+			fmt.Fprintln(errOut, err)
+			return 1
+		}
+		return 0
 	}
 	results := make([]packageInfo, 0, flags.NArg())
 	status := 0
@@ -79,6 +96,49 @@ func run(args []string, out, errOut io.Writer) int {
 		}
 	}
 	return status
+}
+
+func readEntry(path string, id uint32) ([]byte, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	stat, err := f.Stat()
+	if err != nil {
+		return nil, err
+	}
+	header := make([]byte, 0x20)
+	if _, err := f.ReadAt(header, 0); err != nil {
+		return nil, fmt.Errorf("read PKG header: %w", err)
+	}
+	if !bytes.Equal(header[:4], []byte{0x7f, 'C', 'N', 'T'}) {
+		return nil, fmt.Errorf("not a PS4 PKG (invalid magic)")
+	}
+	be := binary.BigEndian
+	count, table := be.Uint32(header[0x10:]), uint64(be.Uint32(header[0x18:]))
+	if count > 1<<20 || !within(table, uint64(count)*32, uint64(stat.Size())) {
+		return nil, fmt.Errorf("invalid PKG entry table")
+	}
+	var entry [32]byte
+	for i := uint32(0); i < count; i++ {
+		if _, err := f.ReadAt(entry[:], int64(table+uint64(i)*32)); err != nil {
+			return nil, fmt.Errorf("read entry: %w", err)
+		}
+		if be.Uint32(entry[:]) != id {
+			continue
+		}
+		offset, size := uint64(be.Uint32(entry[16:])), uint64(be.Uint32(entry[20:]))
+		if size > 16<<20 || !within(offset, size, uint64(stat.Size())) {
+			return nil, fmt.Errorf("entry 0x%X exceeds file bounds or 16 MiB safety limit", id)
+		}
+		data := make([]byte, int(size))
+		if _, err := f.ReadAt(data, int64(offset)); err != nil {
+			return nil, fmt.Errorf("read entry 0x%X: %w", id, err)
+		}
+		return data, nil
+	}
+	return nil, fmt.Errorf("entry 0x%X not found", id)
 }
 
 func inspect(path string) (packageInfo, error) {

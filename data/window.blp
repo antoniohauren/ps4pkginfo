@@ -1,0 +1,118 @@
+using Gtk 4.0;
+using Adw 1;
+translation-domain "ps4pkginfo";
+
+Adw.ApplicationWindow main_window {
+  title: _("PS4 Package Viewer");
+  default-width: 860;
+  default-height: 580;
+  width-request: 360;
+  height-request: 420;
+
+  content: Adw.ToastOverlay toast_overlay {
+    child: Adw.NavigationSplitView {
+      min-sidebar-width: 260;
+      max-sidebar-width: 340;
+
+      sidebar: Adw.NavigationPage {
+        title: _("Package");
+        child: Adw.ToolbarView {
+          [top]
+          Adw.HeaderBar {
+            show-title: false;
+            [end]
+            Gtk.Button open_button {
+              icon-name: "document-open-symbolic";
+              tooltip-text: _("Open package");
+              styles ["suggested-action"]
+            }
+          }
+
+          content: Gtk.ScrolledWindow {
+            hscrollbar-policy: never;
+            child: Gtk.Box {
+              orientation: vertical;
+              spacing: 18;
+              margin-top: 18;
+              margin-bottom: 24;
+              margin-start: 18;
+              margin-end: 18;
+
+              Gtk.Overlay {
+                height-request: 300;
+                child: Gtk.Picture cover {
+                  visible: false;
+                  content-fit: cover;
+                  can-shrink: true;
+                  styles ["card"]
+                  accessibility {
+                    label: _("Package cover artwork");
+                  }
+                };
+                [overlay]
+                Gtk.Image cover_placeholder {
+                  icon-name: "application-x-addon-symbolic";
+                  pixel-size: 96;
+                  styles ["dim-label"]
+                  accessibility {
+                    label: _("No package cover available");
+                  }
+                }
+              }
+
+              Gtk.Box {
+                orientation: vertical;
+                spacing: 4;
+
+                Gtk.Label game_title {
+                  label: _("Open a PS4 package");
+                  wrap: true;
+                  justify: center;
+                  styles ["title-2"]
+                }
+
+                Gtk.Label game_subtitle {
+                  label: _("Metadata and cover artwork");
+                  wrap: true;
+                  justify: center;
+                  styles ["dim-label"]
+                }
+              }
+
+            };
+          };
+        };
+      };
+
+      content: Adw.NavigationPage {
+        title: _("Metadata");
+        child: Adw.ToolbarView {
+          [top]
+          Adw.HeaderBar {
+            title-widget: Adw.WindowTitle {
+              title: _("Metadata");
+              subtitle: _("PARAM.SFO and package header");
+            };
+          }
+
+          content: Gtk.ScrolledWindow {
+            hscrollbar-policy: never;
+            child: Gtk.ListBox metadata_list {
+              selection-mode: none;
+              margin-top: 18;
+              margin-bottom: 24;
+              margin-start: 18;
+              margin-end: 18;
+              styles ["boxed-list"]
+
+              Adw.ActionRow {
+                title: _("No package loaded");
+                subtitle: _("Use the Open button to inspect a .pkg file.");
+              }
+            };
+          };
+        };
+      };
+    };
+  };
+}

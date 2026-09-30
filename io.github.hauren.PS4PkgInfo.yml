@@ -1,0 +1,40 @@
+app-id: io.github.hauren.PS4PkgInfo
+runtime: org.gnome.Platform
+runtime-version: '50'
+sdk: org.gnome.Sdk
+command: ps4pkginfo-gtk
+
+build-options:
+  append-path: /run/build/ps4pkginfo/.go-sdk/bin
+
+finish-args:
+  - --share=ipc
+  - --socket=fallback-x11
+  - --socket=wayland
+  - --device=dri
+
+modules:
+  - name: ps4pkginfo
+    buildsystem: simple
+    build-options:
+      build-args:
+        - --share=network
+    build-commands:
+      - blueprint-compiler compile data/window.blp --output window.ui
+      - go build -trimpath -o ps4pkginfo .
+      - go build -trimpath -o ps4pkginfo-gtk ./cmd/ps4pkginfo-gtk
+      - install -Dm755 ps4pkginfo /app/bin/ps4pkginfo
+      - install -Dm755 ps4pkginfo-gtk /app/bin/ps4pkginfo-gtk
+      - install -Dm644 window.ui /app/share/ps4pkginfo/window.ui
+      - install -Dm644 data/io.github.hauren.PS4PkgInfo.desktop /app/share/applications/io.github.hauren.PS4PkgInfo.desktop
+      - install -Dm644 data/io.github.hauren.PS4PkgInfo.metainfo.xml /app/share/metainfo/io.github.hauren.PS4PkgInfo.metainfo.xml
+      - install -Dm644 data/io.github.hauren.PS4PkgInfo.svg /app/share/icons/hicolor/scalable/apps/io.github.hauren.PS4PkgInfo.svg
+    sources:
+      - type: dir
+        path: .
+      - type: archive
+        url: https://go.dev/dl/go1.27.1.linux-amd64.tar.gz
+        sha256: 63d339f0da5ab53635a56f2490a7984dfe12dfcff22ad749f63edaf590168445
+        dest: .go-sdk
+        only-arches:
+          - x86_64

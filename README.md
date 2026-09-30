@@ -1,7 +1,9 @@
 # ps4pkginfo
 
 Small, read-only Go CLI for inspecting PS4 PKG files, including fake packages
-(FPKG). Standard library only; Go 1.22 or newer.
+(FPKG). CLI code uses only the standard library; Go 1.24 or newer.
+
+Also includes a small libadwaita desktop viewer built with Go and Blueprint.
 
 ## Build and run
 
@@ -10,6 +12,7 @@ go build -o ps4pkginfo .
 ./ps4pkginfo "game.pkg"
 ./ps4pkginfo -all "game.pkg"
 ./ps4pkginfo -json *.pkg
+./ps4pkginfo -icon game.pkg > icon0.png
 ```
 
 Put flags before file paths. Multiple files and shell-expanded globs work.
@@ -33,6 +36,24 @@ recorded in PARAM.SFO, not a guarantee of runtime compatibility.
 Exit codes: `0` success (possibly with warnings), `1` file/output error,
 `2` usage error. A bad file does not prevent inspection of remaining files.
 JSON contains successful results; errors go to stderr.
+
+## Desktop app
+
+Build and run locally with GTK 4, libadwaita, and Blueprint installed:
+
+```sh
+blueprint-compiler compile data/window.blp --output window.ui
+go build -o ps4pkginfo .
+go build -o ps4pkginfo-gtk ./cmd/ps4pkginfo-gtk
+PS4PKGINFO_DATA_DIR="$PWD" ./ps4pkginfo-gtk
+```
+
+Build the Flatpak with the GNOME 50 SDK:
+
+```sh
+flatpak-builder --user --install --force-clean build-dir io.github.hauren.PS4PkgInfo.yml
+flatpak run io.github.hauren.PS4PkgInfo
+```
 
 ## Check
 

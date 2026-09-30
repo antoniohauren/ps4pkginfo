@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=PS4 Package Viewer
+Comment=Inspect PS4 package metadata
+Exec=ps4pkginfo-gtk
+Icon=io.github.hauren.PS4PkgInfo
+Terminal=false
+Type=Application
+Categories=Utility;
+Keywords=PS4;PKG;Package;
